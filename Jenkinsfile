@@ -40,6 +40,16 @@ pipeline {
       }
     }
 
+    stage('Start App') {
+      steps {
+        // Start the production server in background
+        bat 'start /B pnpm run start > server.log 2>&1'
+
+        // Wait up to 30s for http://localhost:3000 to respond
+        bat 'powershell -Command "$url=\'http://localhost:3000\'; for ($i=0;$i -lt 30;$i++){ try{ $r=Invoke-WebRequest -Uri $url -UseBasicParsing -ErrorAction Stop; if ($r.StatusCode -eq 200){ exit 0 } } catch{} Start-Sleep -s 1 }; exit 1"'
+      }
+    }
+
     stage('Run Playwright Tests') {
       steps {
         // Generate HTML and JUnit reports for archiving
